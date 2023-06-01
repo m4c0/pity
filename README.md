@@ -1,2 +1,2 @@
-# ecow-template
-Template repo for ECOW projects
+# pity
+Basic C++ pseudo-terminal library
