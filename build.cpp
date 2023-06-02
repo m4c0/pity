@@ -1,15 +1,10 @@
-#include "../ecow/ecow.hpp"
-#include "../hai/build.hpp"
-#include "../jute/build.hpp"
+#include "build.hpp"
 
 int main(int argc, char **argv) {
   using namespace ecow;
 
-  auto all = unit::create<exe>("poc");
-
-  auto poc = all->add_unit<>("poc");
-  poc->add_wsdep("hai", hai());
-  poc->add_wsdep("jute", jute());
-
-  return run_main(all, argc, argv);
+  auto poc = unit::create<exe>("poc");
+  poc->add_ref(pity());
+  poc->add_unit<>("poc");
+  return run_main(poc, argc, argv);
 }
