@@ -1,9 +1,14 @@
 import pity;
 
-extern "C" int puts(const char *);
+extern "C" int printf(const char *, ...);
 
 int main() {
-  pity::termbuf t{};
+  constexpr const auto font = "VictorMono-Regular.otf";
+  constexpr const auto img_w = 1024;
+  constexpr const auto img_h = 256;
+  constexpr const auto font_h = img_h / 4;
+
+  pity::wtf t{font, font_h};
   t.add_line("==========================");
   t.add_line("Poem follows");
   t.add_line("==========================");
@@ -11,5 +16,11 @@ int main() {
   t.add_line("Onde canta o Sabiá;");
   t.add_line("As aves, que aqui gorjeiam,");
   t.add_line("Não gorjeiam como lá.");
-  t.print(4, puts);
+
+  unsigned char img[img_w * img_h]{};
+  t.print(img, img_w, img_h);
+
+  printf("P2\n1024 256 256\n");
+  for (auto c : img)
+    printf("%d ", c);
 }
