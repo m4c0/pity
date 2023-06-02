@@ -1,10 +1,29 @@
+import hai;
+import jute;
+
 extern "C" int puts(const char *);
 
 class termbuf {
-public:
-  void add_line(const char *msg) {}
+  static constexpr const auto max_lines = 1024;
 
-  void print(unsigned qty, auto &&fn) {}
+  hai::cstr m_buf[max_lines]{};
+  unsigned m_count{};
+
+public:
+  constexpr void add_line(jute::view msg) {
+    if (m_count == max_lines) {
+      return;
+    }
+
+    m_buf[m_count++] = msg.cstr();
+  }
+
+  constexpr void print(unsigned qty, auto &&fn) {
+    auto start = qty >= m_count ? 0 : m_count - qty;
+    for (auto idx = start; idx < m_count; idx++) {
+      fn(m_buf[idx].data());
+    }
+  }
 };
 
 int main() {
