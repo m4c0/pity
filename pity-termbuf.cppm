@@ -29,6 +29,19 @@ public:
 
 static_assert([] {
   pity::termbuf t{};
+  t.add_line("I'm a test");
+
+  jute::view res[4];
+  t.print(4, [ptr = &res[0]](auto line) mutable {
+    *ptr++ = jute::view::unsafe(line);
+  });
+
+  using namespace jute::literals;
+  return res[0] == "I'm a test"_s && res[1] == ""_s && res[2] == ""_s &&
+         res[3] == ""_s;
+}());
+static_assert([] {
+  pity::termbuf t{};
   t.add_line("==========================");
   t.add_line("Poem follows");
   t.add_line("==========================");
