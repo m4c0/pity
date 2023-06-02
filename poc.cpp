@@ -16,6 +16,7 @@ int main() {
   t.add_line("Onde canta o Sabiá;");
   t.add_line("As aves, que aqui gorjeiam,");
   t.add_line("Não gorjeiam como lá.");
+  t.set_scroll(16);
 
   unsigned char img[img_w * img_h]{};
   t.print(img, img_w, img_h);
