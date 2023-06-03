@@ -1,9 +1,16 @@
 export module pity:wtf;
 import :termbuf;
 import jute;
+import sires;
 import what_the_font;
 
 namespace pity {
+export struct font_unavailable {};
+inline auto new_face(::wtf::library &l, jute::view font, unsigned font_h) {
+  auto data = sires::slurp(font).take([](auto) { throw font_unavailable{}; });
+  return l.new_memory_face(data.begin(), data.size(), font_h);
+}
+
 export class wtf {
   termbuf m_term{};
   ::wtf::library m_lib{};
@@ -12,8 +19,8 @@ export class wtf {
   unsigned m_scroll{};
 
 public:
-  wtf(const char *font, unsigned font_h)
-      : m_face{m_lib.new_face(font, font_h)}, m_font_h{font_h} {}
+  wtf(jute::view font, unsigned font_h)
+      : m_face{new_face(m_lib, font, font_h)}, m_font_h{font_h} {}
 
   void add_line(jute::view line) { m_term.add_line(line); }
   void set_scroll(unsigned s) { m_scroll = s; }

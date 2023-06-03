@@ -3,12 +3,11 @@ import pity;
 extern "C" int printf(const char *, ...);
 
 int main() {
-  constexpr const auto font = "VictorMono-Regular.otf";
   constexpr const auto img_w = 1024;
   constexpr const auto img_h = 256;
   constexpr const auto font_h = img_h / 4;
 
-  pity::wtf t{font, font_h};
+  pity::wtf t{"VictorMono-Regular.otf", font_h};
   t.add_line("==========================");
   t.add_line("Poem follows");
   t.add_line("==========================");
