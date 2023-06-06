@@ -6,8 +6,15 @@ import what_the_font;
 
 namespace pity {
 export struct font_unavailable {};
+#ifdef __wasm__
+void abort();
+inline void or_fail(const char *) { abort(); }
+#else
+inline void or_fail(const char *) { throw font_unavailable(); }
+#endif
+
 inline auto new_face(::wtf::library &l, jute::view font, unsigned font_h) {
-  auto data = sires::slurp(font).take([](auto) { throw font_unavailable{}; });
+  auto data = sires::slurp(font).take(or_fail);
   return l.new_memory_face(data.begin(), data.size(), font_h);
 }
 
