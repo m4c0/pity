@@ -1,8 +1,10 @@
+export module poc;
+
 import pity;
 
 extern "C" int printf(const char *, ...);
 
-int main() {
+extern "C" int main() {
   constexpr const auto img_w = 1024;
   constexpr const auto img_h = 256;
   constexpr const auto font_h = img_h / 4;
