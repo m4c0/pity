@@ -18,24 +18,25 @@ inline auto new_face(::wtf::library &l, jute::view font, unsigned font_h) {
   return l.new_memory_face(data.begin(), data.size(), font_h);
 }
 
-export class wtf {
+export class termwtf {
   termbuf m_term{};
   ::wtf::library m_lib{};
   ::wtf::face m_face;
   unsigned m_font_h;
-  unsigned m_scroll{};
+  // TODO: maybe align by the whole line, instead of using baseline?
+  unsigned m_pad_bottom;
 
 public:
-  wtf(jute::view font, unsigned font_h)
-      : m_face{new_face(m_lib, font, font_h)}, m_font_h{font_h} {}
+  termwtf(jute::view font, unsigned font_h)
+      : m_face{new_face(m_lib, font, font_h)}, m_font_h{font_h},
+        m_pad_bottom{font_h / 4} {}
 
   void add_line(jute::view line) { m_term.add_line(line); }
-  void set_scroll(unsigned s) { m_scroll = s; }
 
   void print(unsigned char *img, unsigned img_w, unsigned img_h) {
     auto lines = 1 + img_h / m_font_h; // One extra for pixels below baseline
     auto x = 0;
-    auto y = img_h - (lines - 1) * m_font_h - m_scroll;
+    auto y = img_h - (lines - 1) * m_font_h - m_pad_bottom;
     m_term.print(lines, [&](auto line) {
       m_face.shape_pt(line).draw(img, img_w, img_h, x, y);
       y += m_font_h;
