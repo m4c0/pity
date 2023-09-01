@@ -23,6 +23,22 @@ class ansibuf {
     }
   }
 
+  [[nodiscard]] constexpr unsigned c0(jute::view str) {
+    switch (char c = str[0]) {
+    case 0x1b: // ESC
+      return 1;
+    case '\n':
+      do {
+        append(' ');
+      } while (m_cursor % m_cols != 0);
+
+      return 1;
+    default:
+      append(c);
+      return 1;
+    }
+  }
+
 public:
   constexpr ansibuf(unsigned w, unsigned h)
       : m_buf{w * h}, m_cols{w}, m_rows{h} {}
@@ -31,18 +47,8 @@ public:
   constexpr void run(jute::view str) {
     auto p = 0;
     while (p < str.size()) {
-      switch (str[p]) {
-      case '\n':
-        do {
-          append(' ');
-        } while (m_cursor % m_cols != 0);
-
-        p++;
-        break;
-      default:
-        append(str[p++]);
-        break;
-      }
+      auto [_, s] = str.subview(p);
+      p += c0(s);
     }
   }
 
