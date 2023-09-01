@@ -26,7 +26,7 @@ public:
   constexpr void print(unsigned qty, auto &&fn) {
     auto start = qty >= m_count ? 0 : m_count - qty;
     for (auto idx = start; idx < m_count; idx++) {
-      fn(m_buf[idx].data());
+      fn(jute::view{m_buf[idx]});
     }
   }
 };
@@ -37,9 +37,7 @@ static_assert([] {
   t.add_line("I'm a test");
 
   jute::view res[4];
-  t.print(4, [ptr = &res[0]](auto line) mutable {
-    *ptr++ = jute::view::unsafe(line);
-  });
+  t.print(4, [ptr = &res[0]](auto line) mutable { *ptr++ = line; });
 
   using namespace jute::literals;
   return res[0] == "I'm a test"_s && res[1] == ""_s && res[2] == ""_s &&
@@ -56,9 +54,7 @@ static_assert([] {
   t.add_line("Não gorjeiam como lá.");
 
   jute::view res[4];
-  t.print(4, [ptr = &res[0]](auto line) mutable {
-    *ptr++ = jute::view::unsafe(line);
-  });
+  t.print(4, [ptr = &res[0]](auto line) mutable { *ptr++ = line; });
 
   using namespace jute::literals;
   return res[0] == "Minha terra tem palmeiras,"_s &&
@@ -74,9 +70,7 @@ static_assert([] {
   t.add_line("ok");
 
   jute::view res[4];
-  t.print(4, [ptr = &res[0]](auto line) mutable {
-    *ptr++ = jute::view::unsafe(line);
-  });
+  t.print(4, [ptr = &res[0]](auto line) mutable { *ptr++ = line; });
 
   using namespace jute::literals;
   return res[0] == ""_s && res[1] == ""_s && res[2] == ""_s && res[3] == "ok"_s;
