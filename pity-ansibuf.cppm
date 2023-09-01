@@ -23,13 +23,27 @@ class ansibuf {
     }
   }
 
+  constexpr void cup(jute::view str) { m_cursor = 0; }
+
   [[nodiscard]] constexpr unsigned csi(jute::view str) {
     auto res = 2;
     while (str.size() > res) {
-      if (str[res] >= 0x40 && str[res] <= 0x5F)
-        return res + 1;
+      switch (auto c = str[res++]) {
+      case 'H':
+        cup(str);
+        return res;
+      default:
+        // Non-ANSI CSIs
+        if (c >= 0x60 && c <= 0x7F)
+          return res;
 
-      res++;
+        // ANSI CSIs
+        if (c >= 0x40 && c <= 0x5F)
+          return res;
+
+        res++;
+        break;
+      }
     }
     return res;
   }
@@ -106,6 +120,15 @@ static_assert([] {
 
   b.run("\n\n:q!");
   (b.as_view() == "          :q!  "_s) || fail();
+
+  return true;
+}());
+static_assert([] {
+  using namespace jute::literals;
+  ansibuf b{5, 3};
+
+  b.run("aaaaaaa\e[Hbb");
+  (b.as_view() == "bbaaaaa\0\0\0\0\0\0\0\0") || fail();
 
   return true;
 }());
