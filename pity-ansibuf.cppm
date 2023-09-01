@@ -23,10 +23,36 @@ class ansibuf {
     }
   }
 
+  [[nodiscard]] constexpr unsigned csi(jute::view str) {
+    auto res = 2;
+    while (str.size() > res) {
+      if (str[res] >= 0x40 && str[res] <= 0x5F)
+        return res + 1;
+
+      res++;
+    }
+    return res;
+  }
+
+  [[nodiscard]] constexpr unsigned fe(jute::view str) {
+    if (str.size() < 1)
+      return 1;
+
+    switch (char c = str[1]) {
+    case '[':
+      return csi(str);
+    default:
+      if (c >= 0x40 && c <= 0x5F)
+        return 2;
+
+      append(0x1b);
+      return 1;
+    }
+  }
   [[nodiscard]] constexpr unsigned c0(jute::view str) {
     switch (char c = str[0]) {
     case 0x1b: // ESC
-      return 1;
+      return fe(str);
     case '\n':
       do {
         append(' ');
@@ -80,6 +106,17 @@ static_assert([] {
 
   b.run("\n\n:q!");
   (b.as_view() == "          :q!  "_s) || fail();
+
+  return true;
+}());
+static_assert([] {
+  using namespace jute::literals;
+
+  ansibuf b{2, 2};
+
+  // Do we suppress unknown CSI combos?
+  b.run("\e[9999999Z");
+  (b.as_view() == "\0\0\0\0") || fail();
 
   return true;
 }());
