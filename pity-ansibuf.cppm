@@ -3,6 +3,20 @@ import hai;
 import jute;
 
 namespace pity {
+constexpr int atoi(jute::view a) {
+  int r = 0;
+  for (auto c : a) {
+    if (c < '0' || c > '9')
+      return r;
+
+    r = r * 10 + (c - '0');
+  }
+  return r;
+}
+static_assert(atoi("") == 0);
+static_assert(atoi("12a") == 12);
+static_assert(atoi("0000002") == 2);
+
 class ansibuf {
   hai::array<char> m_buf;
   unsigned m_rows;
@@ -22,16 +36,28 @@ class ansibuf {
       m_buf[m_cursor + i] = ' ';
     }
   }
+  constexpr int coord(jute::view str) {
+    auto i = atoi(str);
+    return i == 0 ? 0 : i - 1;
+  }
 
-  constexpr void cup(jute::view str) { m_cursor = 0; }
+  constexpr void cup(jute::view str) {
+    auto [n, m] = str.split(';');
+    auto ni = coord(n);
+    auto mi = coord(m);
+
+    m_cursor = ni * m_cols + mi;
+  }
 
   [[nodiscard]] constexpr unsigned csi(jute::view str) {
     auto res = 2;
     while (str.size() > res) {
       switch (auto c = str[res++]) {
-      case 'H':
-        cup(str);
+      case 'H': {
+        auto [_, nm, __] = str.subview(2, str.size() - 3);
+        cup(nm);
         return res;
+      }
       default:
         // Non-ANSI CSIs
         if (c >= 0x60 && c <= 0x7F)
@@ -41,7 +67,6 @@ class ansibuf {
         if (c >= 0x40 && c <= 0x5F)
           return res;
 
-        res++;
         break;
       }
     }
@@ -101,6 +126,9 @@ public:
 };
 
 constexpr const auto fail = [] -> bool { throw 0; };
+constexpr const auto check = [](auto &b, jute::view s) {
+  (b.as_view() == s) || fail();
+};
 static_assert([] {
   using namespace jute::literals;
 
@@ -127,8 +155,25 @@ static_assert([] {
   using namespace jute::literals;
   ansibuf b{5, 3};
 
-  b.run("aaaaaaa\e[Hbb");
-  (b.as_view() == "bbaaaaa\0\0\0\0\0\0\0\0") || fail();
+  b.run("aaaaaaa\e[Hb");
+  check(b, "baaaa"
+           "aa\0\0\0"
+           "\0\0\0\0\0");
+
+  b.run("\e[2Hc");
+  check(b, "baaaa"
+           "ca\0\0\0"
+           "\0\0\0\0\0");
+
+  b.run("\e[;3Hd");
+  check(b, "badaa"
+           "ca\0\0\0"
+           "\0\0\0\0\0");
+
+  b.run("\e[2;3He");
+  check(b, "badaa"
+           "cae\0\0"
+           "\0\0\0\0\0");
 
   return true;
 }());
