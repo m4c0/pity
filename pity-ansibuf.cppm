@@ -17,6 +17,30 @@ static_assert(atoi("") == 0);
 static_assert(atoi("12a") == 12);
 static_assert(atoi("0000002") == 2);
 
+class it {
+  jute::view m_view{};
+  unsigned m_len{};
+
+public:
+  constexpr it() = default;
+  constexpr explicit it(jute::view v, unsigned l) : m_view{v}, m_len{l} {}
+
+  [[nodiscard]] constexpr bool operator==(const it &o) const noexcept {
+    return m_view == o.m_view;
+  }
+
+  [[nodiscard]] constexpr auto &operator++() noexcept {
+    auto [a, b] = m_view.subview(m_len);
+    m_view = b;
+    return *this;
+  }
+
+  [[nodiscard]] constexpr auto operator*() const noexcept {
+    auto [a, b] = m_view.subview(m_len);
+    return a;
+  }
+};
+
 class ansibuf {
   hai::array<char> m_buf;
   unsigned m_rows;
@@ -117,12 +141,12 @@ public:
     }
   }
 
-  constexpr auto begin() const noexcept { return m_buf.begin(); }
-  constexpr auto end() const noexcept { return m_buf.end(); }
-
   constexpr auto as_view() const noexcept {
     return jute::view{m_buf.begin(), m_buf.size()};
   }
+
+  constexpr auto begin() const noexcept { return it{as_view(), m_cols}; }
+  constexpr auto end() const noexcept { return it{}; }
 };
 
 constexpr const auto fail = [] -> bool { throw 0; };
@@ -186,6 +210,20 @@ static_assert([] {
   b.run("\e[9999999Z");
   (b.as_view() == "\0\0\0\0") || fail();
 
+  return true;
+}());
+static_assert([] {
+  ansibuf b{5, 3};
+  b.run("abcdefghijklmn");
+
+  jute::view rows[3];
+  jute::view *r = rows;
+  for (auto row : b) {
+    *r++ = row;
+  }
+  (rows[0] == "abcde") || fail();
+  (rows[1] == "fghij") || fail();
+  (rows[2] == "klmn\0") || fail();
   return true;
 }());
 } // namespace pity
