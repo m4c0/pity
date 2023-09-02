@@ -130,7 +130,10 @@ class ansibuf {
 
 public:
   constexpr ansibuf(unsigned w, unsigned h)
-      : m_buf{w * h}, m_cols{w}, m_rows{h} {}
+      : m_buf{w * h}, m_cols{w}, m_rows{h} {
+    for (auto &c : m_buf)
+      c = ' ';
+  }
 
   /// Interpret a series of ANSI chars
   constexpr void run(jute::view str) {
@@ -159,13 +162,13 @@ static_assert([] {
   ansibuf b{5, 3};
 
   b.run("ok");
-  (b.as_view() == "ok\0\0\0\0\0\0\0\0\0\0\0\0\0"_s) || fail();
+  (b.as_view() == "ok             "_s) || fail();
 
   b.run("ay");
-  (b.as_view() == "okay\0\0\0\0\0\0\0\0\0\0\0"_s) || fail();
+  (b.as_view() == "okay           "_s) || fail();
 
   b.run("\n12\n");
-  (b.as_view() == "okay 12   \0\0\0\0\0"_s) || fail();
+  (b.as_view() == "okay 12        "_s) || fail();
 
   b.run("\n");
   (b.as_view() == "12             "_s) || fail();
@@ -181,23 +184,23 @@ static_assert([] {
 
   b.run("aaaaaaa\e[Hb");
   check(b, "baaaa"
-           "aa\0\0\0"
-           "\0\0\0\0\0");
+           "aa   "
+           "     ");
 
   b.run("\e[2Hc");
   check(b, "baaaa"
-           "ca\0\0\0"
-           "\0\0\0\0\0");
+           "ca   "
+           "     ");
 
   b.run("\e[;3Hd");
   check(b, "badaa"
-           "ca\0\0\0"
-           "\0\0\0\0\0");
+           "ca   "
+           "     ");
 
   b.run("\e[2;3He");
   check(b, "badaa"
-           "cae\0\0"
-           "\0\0\0\0\0");
+           "cae  "
+           "     ");
 
   return true;
 }());
@@ -208,7 +211,7 @@ static_assert([] {
 
   // Do we suppress unknown CSI combos?
   b.run("\e[9999999Z");
-  (b.as_view() == "\0\0\0\0") || fail();
+  (b.as_view() == "    ") || fail();
 
   return true;
 }());
@@ -223,7 +226,7 @@ static_assert([] {
   }
   (rows[0] == "abcde") || fail();
   (rows[1] == "fghij") || fail();
-  (rows[2] == "klmn\0") || fail();
+  (rows[2] == "klmn ") || fail();
   return true;
 }());
 } // namespace pity
