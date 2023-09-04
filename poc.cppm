@@ -5,11 +5,10 @@ import jute;
 import pity;
 import silog;
 import sith;
+import sitime;
 import stubby;
 import terminus;
 import traits;
-
-extern "C" unsigned sleep(unsigned);
 
 class thread : public sith::thread {
   static constexpr const auto con_w = 80;
@@ -52,9 +51,9 @@ extern "C" int main() {
   thread th{};
   th.start();
 
-  sleep(1);
+  sitime::sleep(1);
   th.send(":q!\n");
-  sleep(1);
+  sitime::sleep(1);
 
   auto &img = th.update();
 
