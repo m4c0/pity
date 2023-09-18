@@ -130,7 +130,7 @@ class ansibuf {
 
 public:
   constexpr ansibuf(unsigned w, unsigned h)
-      : m_buf{w * h}, m_cols{w}, m_rows{h} {
+      : m_buf{w * h}, m_rows{h}, m_cols{w} {
     for (auto &c : m_buf)
       c = ' ';
   }
@@ -152,7 +152,7 @@ public:
   constexpr auto end() const noexcept { return it{}; }
 };
 
-constexpr const auto fail = [] -> bool { throw 0; };
+constexpr const auto fail = []() -> bool { throw 0; };
 constexpr const auto check = [](auto &b, jute::view s) {
   (b.as_view() == s) || fail();
 };
