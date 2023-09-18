@@ -1,3 +1,5 @@
+#pragma leco app
+#pragma leco add_resource "VictorMono-Regular.otf"
 export module poc;
 
 import hai;
